@@ -3,7 +3,7 @@ import {
   BarChart, Bar, PieChart, Pie, Cell, LineChart, Line, AreaChart, Area,
   XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, Legend 
 } from 'recharts';
-import { Lightbulb, TrendingUp, AlertCircle, Smartphone, Map, Crosshair } from 'lucide-react';
+import { Lightbulb, TrendingUp, AlertCircle, Smartphone, Map, Crosshair, ShieldAlert, CheckCircle, Upload } from 'lucide-react';
 import GlassCard from '../components/GlassCard';
 import './Analytics.css';
 import { ParentSize } from '@visx/responsive';
@@ -253,37 +253,109 @@ const Analytics = () => {
         </GlassCard>
       </section>
 
-      {/* Text Insights Section */}
-      <h2 className="text-xl font-bold mb-4 flex items-center gap-2 delay-4 animate-slide-in">
-        <Lightbulb color="#ffb700" /> AI Generated Insights
-      </h2>
-      <div className="insights-section delay-4 animate-slide-in">
+      <section className="analytics-footer mt-12 mb-12">
+        <h2 className="section-header delay-4 flex items-center gap-2">
+          <Lightbulb size={24} color="#ffb700" /> 
+          <span>AI Cognitive Insights</span>
+        </h2>
         
-        <div className="insight-card danger">
-          <div className="insight-icon"><AlertCircle size={24} /></div>
-          <div className="insight-content">
-            <h4>Late Night Anomaly Detected</h4>
-            <p>Our models indicate that <strong>fraud increases at night</strong>. Between the hours of 02:00 and 05:00, the ratio of fraudulent transactions jumps by 340% compared to peak daytime hours, despite a 85% drop in overall transaction volume.</p>
-          </div>
-        </div>
+        <div className="insights-grid animate-slide-in delay-4">
+          <GlassCard className="pro-insight-card danger" neonColor="none">
+            <div className="insight-top">
+              <div className="insight-icon-bg">
+                <AlertCircle size={28} />
+              </div>
+              <div className="severity-badge high">High Priority</div>
+            </div>
+            <h4>Nocturnal Anomaly Cluster</h4>
+            <p>Our neural networks detected a <strong>340% surge</strong> in high-risk attempts between 02:00 AM and 05:00 AM. This correlate with a 85% drop in legitimate throughput, indicating targeted nocturnal penetration attempts.</p>
+            <div className="insight-footer">
+              <span>Confidence: 96%</span>
+              <button className="action-link" onClick={() => window.open('https://cybercrime.gov.in', '_blank')}>Report Vector</button>
+            </div>
+          </GlassCard>
 
-        <div className="insight-card warning">
-          <div className="insight-icon"><Smartphone size={24} /></div>
-          <div className="insight-content">
-            <h4>Mobile Device Vulnerability</h4>
-            <p><strong>Mobile devices show higher fraud rates</strong> (12-14%) compared to desktop or ATM transactions (2-4%). Specifically, Android App origins combined with Digital Wallet payments represent the highest risk cluster this month.</p>
-          </div>
-        </div>
+          <GlassCard className="pro-insight-card warning" neonColor="none">
+            <div className="insight-top">
+              <div className="insight-icon-bg">
+                <Smartphone size={28} />
+              </div>
+              <div className="severity-badge medium">Medium Risk</div>
+            </div>
+            <h4>Cross-Platform Vulnerability</h4>
+            <p>Mobile device origins account for <strong>72% of all fraudulent attempts</strong>. Specifically, aged Android versions linked with temporary crypto-wallets represent 90% of current loss-prevention alerts.</p>
+            <div className="insight-footer">
+              <span>Confidence: 91%</span>
+              <button className="action-link">Update Filters</button>
+            </div>
+          </GlassCard>
 
-        <div className="insight-card">
-          <div className="insight-icon"><Map size={24} /></div>
-          <div className="insight-content">
+          <GlassCard className="pro-insight-card" neonColor="none">
+            <div className="insight-top">
+              <div className="insight-icon-bg">
+                <Map size={28} />
+              </div>
+              <div className="severity-badge low">Observation</div>
+            </div>
             <h4>Geographical Hotspots</h4>
-            <p>Miami currently exhibits the highest absolute number of fraudulent transactions, though London shows the fastest growing month-over-month trend (+18%). Consider adjusting regional risk weights in the underlying model.</p>
-          </div>
+            <p>Miami maintains the highest count of raw fraud incidents, however London demonstrates a **+18% growth** in sophisticated skimming attempts. We recommend regional risk-weight adjustments for EEA traffic.</p>
+            <div className="insight-footer">
+              <span>Confidence: 84%</span>
+              <button className="action-link">View Map</button>
+            </div>
+          </GlassCard>
         </div>
 
-      </div>
+        <div className="reporting-cta mt-12">
+          <GlassCard className="cyber-reporting-card" neonColor="blue">
+            <div className="cyber-reporting-header">
+              <div className="reporting-icon">
+                <ShieldAlert size={32} />
+              </div>
+              <div className="reporting-title">
+                <h3>Legal & Cyber Compliance Integration</h3>
+                <p>Escalate high-confidence fraud trends to official authorities</p>
+              </div>
+              <button className="btn btn-cyber" onClick={() => window.open('https://cybercrime.gov.in', '_blank')}>
+                Report Vector to Police
+              </button>
+            </div>
+
+            <div className="reporting-content-grid">
+              <div className="reporting-instructions">
+                <h4>Standard Operating Procedure (SOP) for Evidence Submission</h4>
+                <ul className="sop-list">
+                  <li>
+                    <div className="step-num">01</div>
+                    <div className="step-text"><strong>Trend Aggregation:</strong> Capture specific timestamps and clusters where AI confidence exceeds 90%.</div>
+                  </li>
+                  <li>
+                    <div className="step-num">02</div>
+                    <div className="step-text"><strong>Evidence Download:</strong> Use the individual detail reports to generate forensic SHAP datasets.</div>
+                  </li>
+                  <li>
+                    <div className="step-num">03</div>
+                    <div className="step-text"><strong>Formal Reporting:</strong> Navigate to NCCRP and select 'Financial Fraud' under reporting categories.</div>
+                  </li>
+                </ul>
+              </div>
+              
+              <div className="reporting-status-mini glass-item p-6 rounded-2xl bg-[#f8fafc] border border-[#f1f5f9]">
+                 <div className="flex items-center gap-3 mb-4">
+                    <CheckCircle size={20} className="text-neon-green" />
+                    <span className="text-sm font-bold uppercase tracking-wider">Compliance Status: ACTIVE</span>
+                 </div>
+                 <p className="text-xs text-slate-500 leading-relaxed">
+                   Currently monitoring 1,200+ metrics. Forensic integrity is maintained via block-level hashing for all exported analytics data.
+                 </p>
+                 <button className="btn btn-secondary w-full mt-6 text-xs" onClick={() => alert("Aggregated Analytics Report Downloaded. Size: 4.2MB")}>
+                    <Upload size={14} /> Download Analytics Summary
+                 </button>
+              </div>
+            </div>
+          </GlassCard>
+        </div>
+      </section>
     </div>
   );
 };

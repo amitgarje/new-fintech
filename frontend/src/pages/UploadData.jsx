@@ -1,10 +1,9 @@
 import React, { useState, useCallback, useEffect } from 'react';
-import { UploadCloud, FileType, CheckCircle, AlertTriangle, Play, Loader2, Activity, PieChart as PieIcon, BarChart as BarIcon, TrendingUp, ShieldAlert, DollarSign, Smartphone, Clock, Globe, MapPin, Copy } from 'lucide-react';
+import { UploadCloud, FileType, CheckCircle, AlertTriangle, Play, Loader2, Activity, PieChart as PieIcon, BarChart as BarIcon, TrendingUp, ShieldAlert, DollarSign, Smartphone, Clock, Globe, MapPin, Copy, Upload, Info } from 'lucide-react';
 import { 
   BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area
 } from 'recharts';
 import GlassCard from '../components/GlassCard';
-import { predictFraud } from '../utils/mockApi';
 import './UploadData.css';
 
 const AnimatedCounter = ({ end, duration = 2000, prefix = '', suffix = '', isPercentage = false }) => {
@@ -28,6 +27,16 @@ const AnimatedCounter = ({ end, duration = 2000, prefix = '', suffix = '', isPer
   return <span>{prefix}{displayValue}{suffix}</span>;
 };
 
+const TrackTime = ({ offset = 0 }) => {
+  const [time, setTime] = useState("");
+  useEffect(() => {
+    const d = new Date();
+    d.setMinutes(d.getMinutes() + offset);
+    setTime(d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
+  }, [offset]);
+  return <span className="timeline-time">{time}</span>;
+};
+
 const UploadData = () => {
   const [dragActive, setDragActive] = useState(false);
   const [file, setFile] = useState(null);
@@ -36,7 +45,8 @@ const UploadData = () => {
   const [results, setResults] = useState(null);
   const [simulations, setSimulations] = useState([]);
   const [batchData, setBatchData] = useState([]);
-  const [filterTab, setFilterTab] = useState('all'); // 'all', 'safe', 'fraud'
+  const [submitting, setSubmitting] = useState(false);
+  const [filterTab, setFilterTab] = useState('all'); 
   const [metadata, setMetadata] = useState(null);
   const [error, setError] = useState(null);
 
@@ -92,20 +102,14 @@ const UploadData = () => {
       }
       
       const data = await response.json();
-      
       const results = data.results;
       const meta = data.metadata;
 
-      // Calculate summary from batch results
       const total = results.length;
       const fraudCount = results.filter(tx => tx.fraud).length;
       const rate = ((fraudCount / total) * 100).toFixed(2);
 
-      setResults({
-        total,
-        fraud: fraudCount,
-        rate
-      });
+      setResults({ total, fraud: fraudCount, rate });
       setBatchData(results);
       setMetadata(meta);
       setError(null);
@@ -119,8 +123,6 @@ const UploadData = () => {
 
   const simulateTransactions = async () => {
     setIsSimulating(true);
-    
-    // Generate 5 random transactions and feed them into mock API
     const txInputs = Array.from({ length: 5 }).map(() => ({
       amount: Math.random() > 0.8 ? Math.floor(Math.random() * 8000 + 1000) : Math.floor(Math.random() * 500 + 10),
       isNightTime: Math.random() > 0.85,
@@ -129,15 +131,11 @@ const UploadData = () => {
     }));
 
     const newSims = [];
-    
-    // Small delay between each call
     const delay = ms => new Promise(res => setTimeout(res, ms));
 
     for (let i = 0; i < txInputs.length; i++) {
         const tx = txInputs[i];
-        
         try {
-          // Map frontend simulation fields to backend expected fields
           const backendTx = {
               final_amount: tx.amount,
               amt_vs_avg: tx.amount > 1000 ? 2.5 : 1.0,
@@ -169,20 +167,18 @@ const UploadData = () => {
         await delay(200);
     }
 
-    setSimulations(prev => [...newSims, ...prev].slice(0, 15)); // Keep last 15
+    setSimulations(prev => [...newSims, ...prev].slice(0, 15));
     setIsSimulating(false);
   };
 
   const downloadFraudReport = () => {
     if (!batchData.length) return;
-    
     const frauds = batchData.filter(d => d.fraud);
     if (!frauds.length) {
       alert("No fraudulent transactions found to download.");
       return;
     }
 
-    // Define necessary fields for Police report
     const headers = ["Transaction ID", "User ID", "Amount (INR)", "Risk Score (%)", "Status", "AI Explanation (SHAP)", "Sequence", "Device Change", "IP Anomaly"];
     const csvContent = [
       headers.join(","),
@@ -209,7 +205,6 @@ const UploadData = () => {
     document.body.removeChild(link);
   };
 
-  // Chart Data Calculations
   const getPieData = () => {
     if (!batchData.length) return [];
     const fraud = batchData.filter(d => d.fraud).length;
@@ -221,7 +216,6 @@ const UploadData = () => {
 
   const getBarData = () => {
     if (!batchData.length) return [];
-    // Group by hour if available, otherwise by simplified reasons
     const hourly = {};
     batchData.forEach(d => {
       const h = d.hour !== undefined ? `${d.hour}:00` : 'Unknown';
@@ -246,35 +240,25 @@ const UploadData = () => {
 
   const generateDynamicSummary = () => {
     if (!batchData.length) return "";
-    
     const signals = [];
     if (batchData.some(d => d.amt_vs_avg > 2 && d.fraud)) signals.push("high-value transactions");
-    if (batchData.some(d => (d.device_change === 1 || d.device_change === true) && d.fraud)) signals.push("unusual device usage");
-    if (batchData.some(d => (d.fast_txn === 1 || d.fast_txn === true) && d.fraud)) signals.push("rapid transaction velocity");
-    if (batchData.some(d => (d.night_txn === 1 || d.night_txn === true) && d.fraud)) signals.push("night-time anomalies");
-    if (batchData.some(d => (d.geo_mismatch === 1 || d.geo_mismatch === true) && d.fraud)) signals.push("location inconsistencies");
-    if (batchData.some(d => (d.invalid_ip === 1 || d.invalid_ip === true) && d.fraud)) signals.push("suspicious network patterns");
-    if (batchData.some(d => (d.is_duplicate === 1 || d.is_duplicate === true) && d.fraud)) signals.push("duplicate transaction attempts");
-
+    if (batchData.some(d => d.device_change && d.fraud)) signals.push("unusual device usage");
+    if (batchData.some(d => d.fast_txn && d.fraud)) signals.push("rapid transaction velocity");
+    if (batchData.some(d => d.night_txn && d.fraud)) signals.push("night-time anomalies");
+    
     if (signals.length === 0) return "No significant fraud patterns were detected in this dataset.";
-
     const last = signals.pop();
     const joined = signals.length > 0 ? `${signals.join(", ")} and ${last}` : last;
-    
     return `Fraud patterns detected indicate abnormal transaction behavior including ${joined}.`;
   };
 
   const getFraudPatterns = () => {
     if (!batchData.length) return [];
-    
     return [
       { label: 'High Amount', count: batchData.filter(d => d.amt_vs_avg > 2 && d.fraud).length, icon: <DollarSign size={20} />, color: 'var(--neon-blue)' },
-      { label: 'Velocity', count: batchData.filter(d => (d.fast_txn === 1 || d.fast_txn === true) && d.fraud).length, icon: <Activity size={20} />, color: 'var(--neon-purple)' },
-      { label: 'Device Anomaly', count: batchData.filter(d => (d.device_change === 1 || d.device_change === true) && d.fraud).length, icon: <Smartphone size={20} />, color: 'var(--neon-blue)' },
-      { label: 'Night Activity', count: batchData.filter(d => (d.night_txn === 1 || d.night_txn === true) && d.fraud).length, icon: <Clock size={20} />, color: 'var(--neon-purple)' },
-      { label: 'Invalid IP', count: batchData.filter(d => (d.invalid_ip === 1 || d.invalid_ip === true) && d.fraud).length, icon: <Globe size={20} />, color: 'var(--neon-red)' },
-      { label: 'Geo Mismatch', count: batchData.filter(d => (d.geo_mismatch === 1 || d.geo_mismatch === true) && d.fraud).length, icon: <MapPin size={20} />, color: 'var(--neon-blue)' },
-      { label: 'Duplicates', count: batchData.filter(d => (d.is_duplicate === 1 || d.is_duplicate === true) && d.fraud).length, icon: <Copy size={20} />, color: 'var(--neon-red)' },
+      { label: 'Velocity', count: batchData.filter(d => d.fast_txn && d.fraud).length, icon: <Activity size={20} />, color: 'var(--neon-purple)' },
+      { label: 'Device Anomaly', count: batchData.filter(d => d.device_change && d.fraud).length, icon: <Smartphone size={20} />, color: 'var(--neon-blue)' },
+      { label: 'Night Activity', count: batchData.filter(d => d.night_txn && d.fraud).length, icon: <Clock size={20} />, color: 'var(--neon-purple)' },
     ];
   };
 
@@ -287,10 +271,9 @@ const UploadData = () => {
         <div className="text-sm text-[var(--text-secondary)] opacity-70">Step 2: Upload & Review</div>
       </div>
       
-      {/* 1. Fraud Detection Summary */}
       {results && (
         <section className="results-section">
-          <h2 className="section-header delay-1">
+          <h2 className="section-header delay-1 flex items-center gap-2">
             <ShieldAlert size={20} color="var(--neon-blue)" /> Fraud Detection Summary
           </h2>
           <div className="results-grid animate-slide-in mb-8">
@@ -318,7 +301,6 @@ const UploadData = () => {
         </section>
       )}
 
-      {/* Charts Section -> Fraud Insights */}
       {batchData.length > 0 && (
         <>
           <section className="smart-insights-section mt-12">
@@ -341,200 +323,121 @@ const UploadData = () => {
                   </div>
                 ))}
               </div>
-              <div className="explanation-text mt-6">
-                <ShieldAlert size={16} className="inline mr-2" color="var(--neon-blue)" />
-                This system detects fraud based on behavioral, temporal, and device-based anomalies. 
-                Our AI engine correlates multiple risk factors to provide high-confidence alerts for Hackathon-level security.
-              </div>
             </GlassCard>
           </section>
 
-          <section className="high-risk-section mt-12">
-            <h2 className="section-header delay-2 flex items-center gap-2">
-              <ShieldAlert size={20} color="var(--neon-red)" /> Critical Risk Alerts (Top 10)
+          <section className="high-risk-section mt-12 px-2">
+            <h2 className="section-header delay-2 flex items-center gap-3">
+              <ShieldAlert size={24} className="text-neon-red" /> 
+              <span>Critical Risk Intelligence</span>
+              <div className="flex-1 border-b border-dashed border-[var(--border-glass)] ml-4"></div>
             </h2>
             <div className="alert-dashboard-grid animate-slide-in delay-2">
               {getHighRiskTransactions().map((tx, idx) => (
-                <GlassCard key={idx} className={`alert-card ${tx.fraud ? 'border-neon-red' : ''}`} neonColor={tx.fraud ? 'red' : 'none'}>
-                  <div className="flex justify-between items-start mb-4">
-                    <div className="alert-score">
-                      <div className="text-xs text-[var(--text-secondary)] uppercase">Risk Level</div>
-                      <div className={`text-2xl font-bold font-mono ${tx.risk_score > 75 ? 'text-neon-red animate-pulse' : 'text-neon-warning'}`}>
-                        {tx.risk_score}%
+                <div key={idx} className="alert-card-wrapper">
+                  <GlassCard className={`professional-alert-card ${tx.fraud ? 'critical' : 'warning'}`}>
+                    <div className="card-top">
+                      <div className="risk-indicator">
+                        <div className="pulse-dot"></div>
+                        <span className="risk-label">Analysis Result</span>
+                      </div>
+                      <div className={`risk-badge ${tx.fraud ? 'critical' : 'warning'}`}>
+                        {tx.fraud ? 'Fraud' : 'Suspicious'}
                       </div>
                     </div>
-                    <div className={`alert-badge ${tx.fraud ? 'bg-neon-red' : 'bg-neon-warning'}`}>
-                      {tx.fraud ? 'CRITICAL' : 'HIGH RISK'}
+                    <div className="card-body">
+                      <div className="score-section">
+                        <div className="score-value">{tx.risk_score}%</div>
+                        <div className="score-subtext">Threat Probability</div>
+                      </div>
+                      <div className="amount-section font-mono">
+                        <span className="currency">₹</span>
+                        <span className="value">{parseFloat(tx.final_amount || 0).toLocaleString('en-IN')}</span>
+                      </div>
                     </div>
-                  </div>
-                  <div className="mb-4">
-                    <div className="text-xs text-[var(--text-secondary)] uppercase mb-1">Impact Amount</div>
-                    <div className="text-xl font-bold font-mono">₹{parseFloat(tx.final_amount || 0).toLocaleString('en-IN')}</div>
-                  </div>
-                  <div>
-                    <div className="text-xs text-[var(--text-secondary)] uppercase mb-2">Signal Breakdown</div>
-                    <div className="flex flex-wrap gap-1">
-                      {tx.reasons && tx.reasons !== 'Normal' && tx.reasons !== 'Secure transaction' ? 
-                        tx.reasons.split(',').map((reason, rIdx) => (
-                          <span key={rIdx} className="mini-reason-tag">
-                            {reason.trim()}
-                          </span>
-                        )) : 
-                        <span className="text-gray-500 italic text-xs">Threshold alert</span>
-                      }
+                    <div className="card-footer">
+                      <div className="signal-tags">
+                        {tx.reasons && tx.reasons !== 'Normal' ? 
+                          tx.reasons.split(',').map((reason, rIdx) => (
+                            <span key={rIdx} className="professional-tag">{reason.trim()}</span>
+                          )) : <span className="no-signals">Standard Alert</span>
+                        }
+                      </div>
                     </div>
-                  </div>
-                </GlassCard>
+                  </GlassCard>
+                </div>
               ))}
             </div>
           </section>
 
-          <section className="insights-section mt-12">
-          <h2 className="section-header delay-2">
-            <BarIcon size={20} color="var(--neon-purple)" /> Fraud Insights
-          </h2>
-          <div className="charts-grid animate-slide-in delay-2 mb-8">
-            <GlassCard className="chart-card">
-              <h3 className="flex items-center gap-2 mb-4 text-md font-semibold text-[var(--text-secondary)]">
-                Distribution
-              </h3>
-              <ResponsiveContainer width="100%" height={250}>
-                <PieChart>
-                  <Pie
-                    data={getPieData()}
-                    innerRadius={60}
-                    outerRadius={80}
-                    paddingAngle={5}
-                    dataKey="value"
-                    stroke="none"
-                  >
-                    {getPieData().map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />
-                    ))}
-                  </Pie>
-                  <Tooltip 
-                     contentStyle={{ backgroundColor: 'var(--bg-dark)', borderColor: 'var(--border-glass)', borderRadius: '8px' }}
-                  />
-                </PieChart>
-              </ResponsiveContainer>
+          <section className="charts-section mt-12">
+            <h2 className="section-header delay-2 flex items-center gap-2">
+              <BarIcon size={20} color="var(--neon-purple)" /> Data Distribution Metrics
+            </h2>
+            <div className="charts-grid animate-slide-in delay-2 mb-8">
+              <GlassCard className="chart-card">
+                <ResponsiveContainer width="100%" height={250}>
+                  <PieChart>
+                    <Pie data={getPieData()} innerRadius={60} outerRadius={80} paddingAngle={5} dataKey="value" stroke="none">
+                      {getPieData().map((entry, index) => (
+                        <Cell key={index} fill={PIE_COLORS[index % PIE_COLORS.length]} />
+                      ))}
+                    </Pie>
+                    <Tooltip contentStyle={{ backgroundColor: 'var(--bg-dark)', borderRadius: '8px' }} />
+                  </PieChart>
+                </ResponsiveContainer>
+              </GlassCard>
+              <GlassCard className="chart-card">
+                <ResponsiveContainer width="100%" height={250}>
+                  <BarChart data={getBarData()}>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(255,255,255,0.05)" />
+                    <XAxis dataKey="name" stroke="var(--text-secondary)" />
+                    <YAxis stroke="var(--text-secondary)" />
+                    <Tooltip contentStyle={{ backgroundColor: 'var(--bg-dark)', borderRadius: '8px' }} />
+                    <Bar dataKey="count" fill="var(--neon-blue)" radius={[4, 4, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </GlassCard>
+            </div>
+            <GlassCard className="dynamic-summary-card animate-slide-in delay-3" neonColor="none">
+               <div className="flex items-start gap-4 p-2">
+                  <AlertTriangle size={24} color="var(--neon-warning)" />
+                  <p className="text-lg text-[var(--text-primary)] font-medium">{generateDynamicSummary()}</p>
+               </div>
             </GlassCard>
+          </section>
+        </>
+      )}
 
-            <GlassCard className="chart-card">
-              <h3 className="flex items-center gap-2 mb-4 text-md font-semibold text-[var(--text-secondary)]">
-                Temporal Patterns
-              </h3>
-              <ResponsiveContainer width="100%" height={250}>
-                <BarChart data={getBarData()}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
-                  <XAxis dataKey="name" stroke="var(--text-secondary)" fontSize={12} />
-                  <YAxis stroke="var(--text-secondary)" fontSize={12} />
-                  <Tooltip 
-                     contentStyle={{ backgroundColor: 'var(--bg-dark)', borderColor: 'var(--neon-blue)', borderRadius: '8px' }}
-                  />
-                  <Bar dataKey="count" fill="var(--neon-blue)" radius={[4, 4, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
-            </GlassCard>
-
-            <GlassCard className="chart-card">
-              <h3 className="flex items-center gap-2 mb-4 text-md font-semibold text-[var(--text-secondary)]">
-                Risk Distribution
-              </h3>
-              <ResponsiveContainer width="100%" height={250}>
-                <AreaChart data={getRiskDistData()}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
-                  <XAxis dataKey="range" stroke="var(--text-secondary)" fontSize={10} />
-                  <YAxis stroke="var(--text-secondary)" fontSize={12} />
-                  <Tooltip 
-                     contentStyle={{ backgroundColor: 'var(--bg-dark)', borderColor: 'var(--neon-green)', borderRadius: '8px' }}
-                  />
-                  <Area type="monotone" dataKey="count" stroke="var(--neon-green)" fill="rgba(0, 255, 102, 0.1)" strokeWidth={2} />
-                </AreaChart>
-              </ResponsiveContainer>
-            </GlassCard>
-          </div>
-          
-          <GlassCard className="dynamic-summary-card animate-slide-in delay-3 mt-4" neonColor="none">
-             <div className="flex items-start gap-4 p-2">
-                <AlertTriangle size={24} color="var(--neon-warning)" className="shrink-0 mt-1" />
-                <p className="text-lg leading-relaxed text-[var(--text-primary)] font-medium">
-                  {generateDynamicSummary()}
-                </p>
-             </div>
-          </GlassCard>
-        </section>
-      </>
-    )}
-
-      {/* Upload Section */}
       <section className="upload-section mt-8">
         {!results && <h2 className="section-header delay-1">Begin Fraud Analysis</h2>}
         <GlassCard className="delay-2">
-        <div 
-          className={`upload-area ${dragActive ? "drag-active" : ""}`}
-          onDragEnter={handleDrag}
-          onDragLeave={handleDrag}
-          onDragOver={handleDrag}
-          onDrop={handleDrop}
-        >
-          <input 
-            type="file" 
-            className="file-input" 
-            accept=".csv"
-            onChange={handleChange}
-          />
-          <UploadCloud className="upload-icon" size={48} />
-          <div className="upload-text">Drag & Drop your CSV file here</div>
-          <div className="upload-subtext">or click to browse from your computer</div>
-        </div>
-
-        {file && (
-          <div className="selected-file animate-slide-in">
-            <FileType size={24} color="var(--neon-blue)" />
-            <div className="flex-1">
-              <div className="file-name">{file.name}</div>
-              <div className="text-sm text-[var(--text-secondary)]">
-                {(file.size / 1024 / 1024).toFixed(2)} MB
+          <div className={`upload-area ${dragActive ? "drag-active" : ""}`} onDragEnter={handleDrag} onDragLeave={handleDrag} onDragOver={handleDrag} onDrop={handleDrop}>
+            <input type="file" className="file-input" accept=".csv" onChange={handleChange} />
+            <UploadCloud className="upload-icon" size={48} />
+            <div className="upload-text">Drag & Drop your CSV file here</div>
+            <div className="upload-subtext">or click to browse</div>
+          </div>
+          {file && (
+            <div className="selected-file animate-slide-in">
+              <FileType size={24} color="var(--neon-blue)" />
+              <div className="flex-1">
+                <div className="file-name">{file.name}</div>
+                <div className="text-sm text-[var(--text-secondary)]">{(file.size / 1024 / 1024).toFixed(2)} MB</div>
               </div>
+              <CheckCircle size={20} color="var(--neon-green)" />
             </div>
-            <CheckCircle size={20} color="var(--neon-green)" />
+          )}
+          <div className="actions-row">
+            <button className="btn btn-primary" onClick={processData} disabled={!file || isProcessing}>
+              {isProcessing ? <><span className="spinner"></span> Processing...</> : 'Process Data'}
+            </button>
+            <button className="btn btn-secondary" onClick={simulateTransactions} disabled={isSimulating}>
+              {isSimulating ? <><Loader2 className="animate-spin" size={20} /> Simulating...</> : <><Play size={20} /> Simulate</>}
+            </button>
           </div>
-        )}
-
-        <div className="actions-row">
-          <button 
-            className="btn btn-primary" 
-            onClick={processData}
-            disabled={!file || isProcessing}
-          >
-            {isProcessing ? (
-              <><span className="spinner"></span> Processing...</>
-            ) : (
-              'Process Data'
-            )}
-          </button>
-          
-          <button 
-            className="btn btn-secondary"
-            onClick={simulateTransactions}
-            disabled={isSimulating}
-          >
-            {isSimulating ? (
-              <><Loader2 className="animate-spin" size={20} /> Simulating...</>
-            ) : (
-              <><Play size={20} /> Simulate Transactions</>
-            )}
-          </button>
-        </div>
-
-        {isProcessing && file && file.size > 0 && (
-          <div className="large-file-warning animate-slide-in">
-            <Loader2 className="animate-spin" size={20} />
-            it  would takee some time as of size is bigger 
-          </div>
-        )}
-      </GlassCard>
-    </section>
+        </GlassCard>
+      </section>
 
       {error && (
         <div className="error-message animate-slide-in mt-4">
@@ -543,171 +446,107 @@ const UploadData = () => {
         </div>
       )}
 
-
-      {/* Batch Results Table -> Transaction Table */}
       {batchData.length > 0 && (
-        <section className="table-section mt-12 mb-12">
-          <h2 className="section-header delay-2">
-            <FileType size={20} color="var(--neon-green)" /> Transaction Analysis Table
-          </h2>
-          
-          <div className="filter-tabs animate-slide-in delay-2 mb-6">
-            <button 
-              className={`filter-tab ${filterTab === 'all' ? 'active' : ''}`}
-              onClick={() => setFilterTab('all')}
-            >
-              All Transactions
-              <span className="tab-count">{batchData.length}</span>
-            </button>
-            <button 
-              className={`filter-tab ${filterTab === 'safe' ? 'active' : ''}`}
-              onClick={() => setFilterTab('safe')}
-            >
-              Safe
-              <span className="tab-count">{batchData.filter(d => !d.fraud).length}</span>
-            </button>
-            <button 
-              className={`filter-tab ${filterTab === 'fraud' ? 'active' : ''}`}
-              onClick={() => setFilterTab('fraud')}
-            >
-              Frauds / Suspicious
-              <span className="tab-count">{batchData.filter(d => d.fraud).length}</span>
-            </button>
-            <div className="flex-1"></div>
-            <button className="btn btn-primary bg-red-600 hover:bg-red-700 text-xs px-3" onClick={downloadFraudReport}>
-              Download Fraud Report (Police Ready)
-            </button>
-          </div>
+        <>
+          <section className="table-section mt-12 mb-12">
+            <h2 className="section-header delay-2">
+              <FileType size={20} color="var(--neon-green)" /> Transaction Analysis Table
+            </h2>
+            <div className="filter-tabs animate-slide-in delay-2 mb-6">
+              {['all', 'safe', 'fraud'].map(tab => (
+                <button key={tab} className={`filter-tab ${filterTab === tab ? 'active' : ''}`} onClick={() => setFilterTab(tab)}>
+                  {tab === 'all' ? 'All' : tab === 'safe' ? 'Safe' : 'Frauds'}
+                  <span className="tab-count">{tab === 'all' ? batchData.length : batchData.filter(d => tab === 'safe' ? !d.fraud : d.fraud).length}</span>
+                </button>
+              ))}
+              <div className="flex-1"></div>
+              <button className="btn btn-primary bg-red-600 hover:bg-red-700 text-xs px-3" onClick={downloadFraudReport}>
+                Download Fraud Report
+              </button>
+            </div>
 
-          {metadata && metadata.quality_audit && (
-            <GlassCard className="data-quality-audit mb-6 animate-slide-in" neonColor="none">
-              <h3 className="text-sm font-bold uppercase tracking-wider text-[var(--text-secondary)] mb-4 flex items-center gap-2">
-                <ShieldAlert size={16} color="var(--neon-green)" /> Data Quality Audit
-              </h3>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="audit-item">
-                  <div className="text-xs text-[var(--text-secondary)]">Missing Values</div>
-                  <div className={`text-xl font-bold ${metadata.quality_audit.missing_values > 0 ? 'text-neon-warning' : 'text-neon-green'}`}>
-                    {metadata.quality_audit.missing_values}
-                  </div>
+            <GlassCard className="animate-slide-in delay-2" neonColor="none">
+              <div className="table-container scrollable-table">
+                <table className="prediction-table">
+                  <thead>
+                    <tr><th>Amount</th><th>Risk Score</th><th>Status</th><th className="w-1/2">SHAP Analysis</th></tr>
+                  </thead>
+                  <tbody>
+                    {batchData.filter(row => filterTab === 'all' || (filterTab === 'safe' ? !row.fraud : row.fraud)).map((row, index) => (
+                      <tr key={index} className={!row.fraud ? 'row-safe' : row.risk_score > 75 ? 'row-fraud' : 'row-suspicious'}>
+                        <td className="font-mono font-bold">₹{parseFloat(row.final_amount || 0).toLocaleString('en-IN')}</td>
+                        <td className="font-mono text-center">
+                          <div className={`score-pill ${row.fraud ? 'danger' : 'success'}`}>{row.risk_score}%</div>
+                        </td>
+                        <td><span className={`badge ${!row.fraud ? 'safe' : row.risk_score > 75 ? 'fraud' : 'suspicious'}`}>{!row.fraud ? 'Safe' : row.risk_score > 75 ? 'Fraud' : 'Suspicious'}</span></td>
+                        <td>
+                          <div className="flex flex-wrap gap-2">
+                            {row.reasons && row.reasons !== 'Normal' ? row.reasons.split(',').map((reason, rIdx) => (
+                              <span key={rIdx} className="reason-tag pro">{reason.trim()}</span>
+                            )) : <span className="text-gray-400 italic text-xs">Baseline Normal</span>}
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </GlassCard>
+          </section>
+
+          <section className="cyber-reporting-section mt-12 mb-12 animate-slide-in delay-3">
+            <GlassCard className="cyber-reporting-card" neonColor="blue">
+              <div className="cyber-reporting-header">
+                <div className="reporting-icon"><ShieldAlert size={32} /></div>
+                <div className="reporting-title">
+                  <h3>Legal & Cyber Compliance Dashboard</h3>
+                  <p>National Cyber Crime Reporting Portal (NCCRP) Integration</p>
                 </div>
-                <div className="audit-item">
-                  <div className="text-xs text-[var(--text-secondary)]">Duplicate Records</div>
-                  <div className={`text-xl font-bold ${metadata.quality_audit.duplicates > 0 ? 'text-neon-red' : 'text-neon-green'}`}>
-                    {metadata.quality_audit.duplicates}
-                  </div>
+                <button className="btn btn-cyber" onClick={() => window.open('https://cybercrime.gov.in', '_blank')}>Escalate to Cyber Cell</button>
+              </div>
+              <div className="reporting-content-grid">
+                <div className="reporting-instructions">
+                  <h4>Standard Operating Procedure (SOP)</h4>
+                  <ul className="sop-list">
+                    <li><div className="step-num">01</div><div className="step-text"><strong>Download Forensic File:</strong> Use the Report button above.</div></li>
+                    <li><div className="step-num">02</div><div className="step-text"><strong>Authentication:</strong> Login to the NCCRP Portal.</div></li>
+                    <li><div className="step-num">03</div><div className="step-text"><strong>Submission:</strong> Attach the SHAP report for evidence.</div></li>
+                  </ul>
                 </div>
-                <div className="audit-item">
-                  <div className="text-xs text-[var(--text-secondary)]">Normalized Cities</div>
-                  <div className="text-xl font-bold text-neon-blue">
-                    {metadata.city_normalization ? metadata.city_normalization.length : 0}
+                <div className="reporting-simulation glass-item">
+                  <h4>Live Status Tracking</h4>
+                  <div className="status-timeline">
+                    <div className="timeline-item active"><div className="dot"></div><div className="text">AI Detection Triggered</div><TrackTime offset={-30} /></div>
+                    <div className="timeline-item active"><div className="dot"></div><div className="text">Evidence Compiled</div><TrackTime offset={-15} /></div>
+                    <div className={submitting ? "timeline-item active" : "timeline-item pulse"}><div className="dot"></div><div className="text">{submitting ? "Reported Successfully" : "Awaiting User Escalation"}</div><span className="status-now">{submitting ? <CheckCircle size={14} /> : "Pending"}</span></div>
+                  </div>
+                  <div className="mt-8">
+                    <button className={`btn w-full ${submitting ? 'btn-secondary' : 'btn-primary'} mb-4`} onClick={() => { setSubmitting(true); setTimeout(() => setSubmitting(false), 5000); }} disabled={submitting}>
+                      {submitting ? 'Escalating...' : 'Submit Forensic Report'}
+                    </button>
+                    <div className="case-digest pro">
+                      {batchData.filter(d => d.fraud).length > 0 ? `Detected ${batchData.filter(d => d.fraud).length} fraud cases. Impact: ₹${batchData.filter(d => d.fraud).reduce((acc, curr) => acc + (parseFloat(curr.final_amount) || 0), 0).toLocaleString('en-IN')}.` : "No pending cases."}
+                    </div>
                   </div>
                 </div>
               </div>
             </GlassCard>
-          )}
+          </section>
+        </>
+      )}
 
-          <GlassCard className="animate-slide-in delay-2" neonColor="none">
-            <div className="table-container scrollable-table">
-            <table className="prediction-table">
-              <thead>
-                <tr>
-                  <th>Amount</th>
-                  <th>Risk Score</th>
-                  <th>Status</th>
-                  <th className="w-1/2">AI Decision Analysis (SHAP)</th>
-                </tr>
-              </thead>
-              <tbody>
-                {batchData
-                  .filter(row => {
-                    if (filterTab === 'all') return true;
-                    if (filterTab === 'safe') return !row.fraud;
-                    if (filterTab === 'fraud') return row.fraud;
-                    return true;
-                  })
-                  .map((row, index) => (
-                  <tr 
-                    key={`row-${index}`} 
-                    className={!row.fraud ? 'row-safe' : row.risk_score > 75 ? 'row-fraud' : 'row-suspicious'}
-                  >
-                    <td className="font-mono font-bold">
-                      ₹{parseFloat(row.final_amount || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
-                    </td>
-                    <td className="font-mono">
-                      <span className={row.fraud ? 'text-neon-red' : 'text-neon-green'}>
-                        {row.risk_score}%
-                      </span>
-                    </td>
-                    <td>
-                      <span className={`badge ${!row.fraud ? 'safe' : row.risk_score > 75 ? 'fraud' : 'suspicious'}`}>
-                        {!row.fraud ? 'Safe' : row.risk_score > 75 ? 'Fraud' : 'Suspicious'}
-                      </span>
-                    </td>
-                    <td>
-                      <div className="flex flex-wrap gap-2">
-                        {row.reasons && row.reasons !== 'Normal' && row.reasons !== 'Secure transaction' ? 
-                          row.reasons.split(',').map((reason, rIdx) => {
-                            const r = reason.trim();
-                            return (
-                              <span key={rIdx} className={`reason-tag ${r.toLowerCase().replace(/ /g, '-')}`}>
-                                {r}
-                              </span>
-                            );
-                          }) : 
-                          <span className="text-gray-500 opacity-50 italic text-xs">No anomalies detected</span>
-                        }
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </GlassCard>
-      </section>
-    )}
-
-      {/* Simulation Feed */}
       {simulations.length > 0 && (
-        <GlassCard className="animate-slide-in delay-2 mt-4" neonColor="none">
-          <h3 className="flex items-center gap-2 mb-4 text-xl font-semibold border-b border-[var(--border-glass)] pb-4">
-            <Activity size={24} color="var(--neon-blue)" /> Live Simulation Feed
-          </h3>
-          
+        <GlassCard className="animate-slide-in delay-2 mt-8">
+          <h3 className="flex items-center gap-2 mb-4 text-xl font-semibold"><Activity size={24} color="var(--neon-blue)" /> Simulation Feed</h3>
           <div className="simulation-list">
             {simulations.map((sim, index) => (
-              <div 
-                key={`${sim.id}-${index}`} 
-                className="sim-item"
-                style={{ animationDelay: `${(index % 5) * 0.1}s` }}
-              >
+              <div key={index} className="sim-item">
                 <div className="flex items-center gap-4">
-                  {sim.status === 'Fraud' ? (
-                    <div className="p-2 rounded-full bg-[rgba(255,51,102,0.1)]">
-                      <AlertTriangle size={20} color="var(--neon-red)" />
-                    </div>
-                  ) : (
-                    <div className="p-2 rounded-full bg-[rgba(0,255,102,0.1)]">
-                      <CheckCircle size={20} color="var(--neon-green)" />
-                    </div>
-                  )}
-                  <div>
-                    <div className="font-medium">{sim.id}</div>
-                    <div className="text-sm text-[var(--text-secondary)]">{sim.amount}</div>
-                  </div>
+                  {sim.status === 'Fraud' ? <AlertTriangle size={20} color="var(--neon-red)" /> : <CheckCircle size={20} color="var(--neon-green)" />}
+                  <div><div className="font-medium text-sm">{sim.id}</div><div className="text-xs text-[var(--text-secondary)]">{sim.amount}</div></div>
                 </div>
-                
-                <div className="text-right flex items-center gap-4">
-                  <div className="flex flex-col items-end">
-                    <span className="text-xs text-[var(--text-secondary)] mb-1">Risk Score</span>
-                    <span className={`font-mono font-bold ${sim.status === 'Fraud' ? 'text-neon-red' : 'text-neon-green'}`}>
-                      {sim.riskScore}
-                    </span>
-                  </div>
-                  <span className={`badge ${sim.status.toLowerCase()}`}>
-                    {sim.status}
-                  </span>
+                <div className="text-right">
+                <span className={`badge ${sim.status.toLowerCase()}`}>{sim.status}</span>
                 </div>
               </div>
             ))}

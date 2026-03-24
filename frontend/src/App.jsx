@@ -1,7 +1,6 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Sidebar from './components/Sidebar';
 import Home from './pages/Home';
-import Dashboard from './pages/Dashboard';
 import UploadData from './pages/UploadData';
 import LiveDetection from './pages/LiveDetection';
 import Analytics from './pages/Analytics';
@@ -15,7 +14,6 @@ function App() {
         <main className="main-content">
           <Routes>
             <Route path="/" element={<Home />} />
-            <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/upload" element={<UploadData />} />
             <Route path="/live" element={<LiveDetection />} />
             <Route path="/analytics" element={<Analytics />} />

@@ -56,6 +56,12 @@ body {
   height: 100vh;
 }
 
+@media (max-width: 768px) {
+  .app-container {
+    flex-direction: column;
+  }
+}
+
 .main-content {
   flex: 1;
   padding: 2rem;
@@ -63,6 +69,20 @@ body {
   display: flex;
   flex-direction: column;
   gap: 2rem;
+}
+
+@media (max-width: 768px) {
+  .main-content {
+    padding: 1rem;
+    height: calc(100vh - 60px); /* Adjust for mobile header/nav */
+  }
+}
+
+/* Typography Scaling */
+@media (max-width: 640px) {
+  .page-title {
+    font-size: 1.5rem;
+  }
 }
 
 /* Animations */

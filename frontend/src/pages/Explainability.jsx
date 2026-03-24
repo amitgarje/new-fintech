@@ -2,7 +2,7 @@ import React from 'react';
 import { 
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, Cell
 } from 'recharts';
-import { BrainCircuit, Search, DollarSign, Smartphone, Clock, AlertTriangle } from 'lucide-react';
+import { BrainCircuit, Search, DollarSign, Smartphone, Clock, AlertTriangle, ShieldAlert } from 'lucide-react';
 import GlassCard from '../components/GlassCard';
 import './Explainability.css';
 
@@ -68,62 +68,86 @@ const Explainability = () => {
         </GlassCard>
 
         {/* Example Case Breakdown */}
-        <GlassCard className="example-case-card delay-3">
-          <h3 className="flex items-center gap-2 text-xl font-semibold border-b border-[var(--border-glass)] pb-4">
-            <Search color="var(--neon-blue)" /> Local Explainability: Example Case
-          </h3>
-          
-          <div className="transaction-summary animate-slide-in delay-4">
-            <div className="tx-details">
-              <h4>TX-8992-ALERT</h4>
-              <p>User: U-4412 • Nov 12, 03:14 AM</p>
+        <GlassCard className="example-case-card delay-3 pro-xai" neonColor="blue">
+          <div className="xai-header">
+            <div className="xai-title">
+              <h3 className="flex items-center gap-3 text-2xl font-black">
+                <Search size={28} className="text-neon-blue" /> Case Forensic Breakdown
+              </h3>
+              <p className="text-[var(--text-secondary)] mt-1 font-medium text-sm">Case evidence generated through SHAP Attribution Engine</p>
             </div>
-            <div className="tx-amount">
-              <div className="amount">$4,250.00</div>
-              <div className="status">94% Risk Score</div>
+            <div className="tx-status-badge fraud">CRITICAL FRAUD ALERT</div>
+          </div>
+          
+          <div className="transaction-summary animate-slide-in delay-4 pro">
+            <div className="tx-details">
+              <div className="tx-id">IDENTIFIER: <span className="font-bold text-neon-blue">TX-8992-ALERT</span></div>
+              <div className="tx-meta">USER_GUID: 4412 • TIMESTAMP: NOV 12, 03:14:22 AM</div>
+            </div>
+            <div className="tx-impact">
+              <div className="amount-val">₹3,48,250.00</div>
+              <div className="threat-probability">94.2% Risk Score</div>
             </div>
           </div>
 
-          <div className="explanation-section animate-slide-in delay-5">
-            <h3>Why was this flagged as Fraud?</h3>
+          <div className="explanation-section animate-slide-in delay-5 pro">
+            <h4 className="attribution-title">Primary Feature Attribution (SHAP Values)</h4>
             
-            <div className="reason-bullets">
+            <div className="reason-bullets-pro">
               
-              <div className="reason-bullet">
-                <div className="bullet-icon">
-                  <DollarSign size={20} />
+              <div className="reason-bullet-card">
+                <div className="bullet-header">
+                  <div className="bullet-icon-wrapper danger">
+                    <DollarSign size={20} />
+                  </div>
+                  <h5>Abnormal Velocity Cluster</h5>
+                  <div className="weight-pill">+45%</div>
                 </div>
-                <div className="bullet-content">
-                  <h5>Amount Anomaly: 8.5x Higher Than Average</h5>
-                  <p>The transaction amount of $4,250.00 significantly deviates from the user's historical 6-month average of $495.00. This feature contributed 45% to the final risk score.</p>
-                </div>
-              </div>
-
-              <div className="reason-bullet">
-                <div className="bullet-icon warning">
-                  <Smartphone size={20} />
-                </div>
-                <div className="bullet-content">
-                  <h5>New Device Fingerprint</h5>
-                  <p>The transaction originated from an unrecognized Android device (Model XT-21) that has never been associated with User U-4412's profile before. Contributed 30% to the risk score.</p>
+                <div className="bullet-body">
+                  <p>Transaction amount is <strong>8.5x higher</strong> than User U-4412's 180-day baseline. This deviation represents a significant departure from standard spending behavior.</p>
                 </div>
               </div>
 
-              <div className="reason-bullet">
-                <div className="bullet-icon warning">
-                  <Clock size={20} />
+              <div className="reason-bullet-card">
+                <div className="bullet-header">
+                  <div className="bullet-icon-wrapper warning">
+                    <Smartphone size={20} />
+                  </div>
+                  <h5>Hardware Hash Mismatch</h5>
+                  <div className="weight-pill">+30%</div>
                 </div>
-                <div className="bullet-content">
-                  <h5>Unusual Time Pattern</h5>
-                  <p>Transaction occurred at 03:14 AM local time, whereas 92% of the user's historical safe transactions occur between 09:00 AM and 08:00 PM. Contributed 19% to the risk score.</p>
+                <div className="bullet-body">
+                  <p>Detected an unrecognized <strong>Android (v14) device fingerprint</strong>. The device ID and cross-session tracking data show no historical correlation with this account.</p>
+                </div>
+              </div>
+
+              <div className="reason-bullet-card">
+                <div className="bullet-header">
+                  <div className="bullet-icon-wrapper info">
+                    <Clock size={20} />
+                  </div>
+                  <h5>Temporal Anomaly Pattern</h5>
+                  <div className="weight-pill">+19%</div>
+                </div>
+                <div className="bullet-body">
+                  <p>Attempted at 03:14 AM. <strong>92% of user activity</strong> is restricted to diurnal hours (09:00 - 20:00). High nocturnal confidence in behavior.</p>
                 </div>
               </div>
 
             </div>
+          </div>
+
+          <div className="xai-footer mt-12 pt-8 border-t border-[#f1f5f9] flex items-center justify-between">
+            <div className="legal-notice">
+              <ShieldAlert size={20} className="text-neon-red inline mr-2" />
+              <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">Forensic Integrity Verified</span>
+            </div>
+            <button className="btn btn-cyber" onClick={() => window.open('https://cybercrime.gov.in', '_blank')}>
+              Generate Evidence & Report
+            </button>
           </div>
           
         </GlassCard>
-
       </div>
     </div>
   );

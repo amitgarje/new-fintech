@@ -15,7 +15,6 @@ const Sidebar = () => {
 
   const navItems = [
     { path: '/', name: 'Home', icon: HomeIcon },
-    { path: '/dashboard', name: 'Dashboard', icon: LayoutDashboard },
     { path: '/upload', name: 'Upload Data', icon: UploadCloud },
     { path: '/live', name: 'Live Detection', icon: ActivitySquare },
     { path: '/analytics', name: 'Analytics', icon: BarChart3 },
