@@ -1,0 +1,1 @@
+\n--- EXACT APP.PY FEATURE STATS ON PARTICIPANT DATASET ---\nTotal rows: 1447\nnight_txn: 100\namt_vs_avg > 2: 0\nfast_txn: 0\ndevice_change: 0\ninvalid_ip: 87\ngeo_mismatch: 0\nis_duplicate: 0\nfinal_amount > 200000: 10\nrisk_score > 40: 0\nCurrent app.py Fraud logic Total: 10\nRows with risk > 0: 18\nRows with risk > 1: 10\n

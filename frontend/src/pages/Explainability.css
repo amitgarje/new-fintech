@@ -1,0 +1,156 @@
+.explain-container {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.explain-header {
+  margin-bottom: 1rem;
+}
+
+.model-trust-section {
+  display: grid;
+  grid-template-columns: 1fr 1.5fr;
+  gap: 1.5rem;
+}
+
+@media (max-width: 968px) {
+  .model-trust-section {
+    grid-template-columns: 1fr;
+  }
+}
+
+.feature-chart-card {
+  min-height: 400px;
+}
+
+.example-case-card {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.transaction-summary {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #f8fafc;
+  padding: 1.5rem;
+  border-radius: 12px;
+  border-left: 4px solid var(--neon-red);
+}
+
+.tx-details h4 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 0.25rem;
+}
+
+.tx-details p {
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+  font-family: monospace;
+}
+
+.tx-amount {
+  text-align: right;
+}
+
+.tx-amount .amount {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--neon-red);
+  font-family: monospace;
+}
+
+.tx-amount .status {
+  display: inline-block;
+  background: rgba(239, 68, 68, 0.1);
+  color: var(--neon-red);
+  padding: 0.25rem 0.75rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-top: 0.5rem;
+  border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+.explanation-section {
+  background: rgba(0, 98, 255, 0.02);
+  border: 1px solid rgba(0, 98, 255, 0.1);
+  border-radius: 12px;
+  padding: 1.5rem;
+}
+
+.explanation-section h3 {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1.125rem;
+  color: var(--neon-blue);
+  margin-bottom: 1.5rem;
+  border-bottom: 1px solid rgba(0, 98, 255, 0.1);
+  padding-bottom: 0.75rem;
+}
+
+.reason-bullets {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.reason-bullet {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  padding: 1rem;
+  background: #f8fafc;
+  border-radius: 8px;
+  transition: transform 0.2s ease;
+}
+
+.reason-bullet:hover {
+  transform: translateX(5px);
+  background: #f1f5f9;
+}
+
+.bullet-icon {
+  background: rgba(239, 68, 68, 0.1);
+  color: var(--neon-red);
+  padding: 0.5rem;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.bullet-icon.warning {
+  background: rgba(245, 158, 11, 0.1);
+  color: #f59e0b;
+}
+
+.bullet-content h5 {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+  color: var(--text-primary);
+}
+
+.bullet-content p {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
+
+/* Feature importance bar chart customizations */
+.recharts-bar-rectangle {
+  transition: all 0.3s ease;
+}
+.recharts-bar-rectangle:hover {
+  filter: brightness(1.2) drop-shadow(0 0 8px currentColor);
+}

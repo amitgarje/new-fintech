@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <defs>
+    <linearGradient id="flux-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0062ff;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#00d2ff;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  <circle cx="50" cy="50" r="45" fill="white" stroke="url(#flux-gradient)" stroke-width="2"/>
+  <path d="M30 50 C 30 35, 45 30, 50 30 C 65 30, 70 45, 70 50 C 70 65, 55 70, 50 70 C 35 70, 30 55, 30 50 Z" fill="url(#flux-gradient)"/>
+  <path d="M40 50 L 50 35 L 50 65 L 60 50" fill="none" stroke="white" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M45 45 L 55 55" fill="none" stroke="white" stroke-width="3" stroke-linecap="round"/>
+</svg>

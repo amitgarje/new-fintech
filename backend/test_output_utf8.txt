@@ -1,0 +1,75 @@
+﻿{
+  "metadata": {
+    "city_normalization": [
+      "Mumbai",
+      "Delhi"
+    ],
+    "performance_metrics": {
+      "f1_score": 0.96,
+      "precision": 0.98,
+      "recall": 0.94
+    },
+    "quality_audit": {
+      "cols_with_nulls": [],
+      "duplicates": 0,
+      "missing_values": 0
+    }
+  },
+  "results": [
+    {
+      "amt_vs_avg": 0.9900990099009901,
+      "city": "Mumbai",
+      "device id": "D1",
+      "device_change": 0,
+      "fast_txn": 0,
+      "final_amount": 100.0,
+      "fraud": false,
+      "geo_mismatch": 0,
+      "hour": 10,
+      "invalid_ip": 0,
+      "ip": "192.168.1.1",
+      "is_duplicate": 0,
+      "merchant location": "Mumbai",
+      "night_txn": 0,
+      "reasons": "Normal",
+      "risk_score": 0.0,
+      "time": "2023-10-01 10:00:00",
+      "time_diff": NaN,
+      "timestamp": "Sun, 01 Oct 2023 10:00:00 GMT",
+      "transaction id": 1,
+      "transaction_amount": 100,
+      "txn_sequence": 1,
+      "user id": "U1",
+      "user location": "Mumbai",
+      "vs_global_avg": 0.0007996737331168884
+    },
+    {
+      "amt_vs_avg": 0.999996000016,
+      "city": "Delhi",
+      "device id": "D2",
+      "device_change": 0,
+      "fast_txn": 0,
+      "final_amount": 250000.0,
+      "fraud": true,
+      "geo_mismatch": 1,
+      "hour": 2,
+      "invalid_ip": 1,
+      "ip": "192.168.1",
+      "is_duplicate": 0,
+      "merchant location": "London",
+      "night_txn": 1,
+      "reasons": "Unusual time, Invalid IP, Location mismatch",
+      "risk_score": 4.86,
+      "time": "2023-10-01 02:00:00",
+      "time_diff": NaN,
+      "timestamp": "Sun, 01 Oct 2023 02:00:00 GMT",
+      "transaction id": 2,
+      "transaction_amount": 250000,
+      "txn_sequence": 1,
+      "user id": "U2",
+      "user location": "Delhi",
+      "vs_global_avg": 1.9991843327922207
+    }
+  ]
+}
+

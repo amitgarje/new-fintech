@@ -1,0 +1,11 @@
+{
+  "name": "fraud-detection-root",
+  "version": "1.0.0",
+  "description": "Root management for Fraud Detection Project",
+  "scripts": {
+    "install-all": "npm install && cd frontend && npm install",
+    "dev-frontend": "cd frontend && npm run dev",
+    "dev-backend": "cd backend && python app.py",
+    "dev": "npm run dev-frontend"
+  }
+}
